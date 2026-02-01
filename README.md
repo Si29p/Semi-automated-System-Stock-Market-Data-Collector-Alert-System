@@ -10,7 +10,8 @@ advanced_stock_system/
 │
 ├── core/
 │   ├── fetcher.py              # Advanced data fetching
-│   ├── analyzer.py             # Multiple strategy analysis
+│   ├── analyzer.py  
+           # Multiple strategy analysis
 │   ├── risk_manager.py         # Risk calculation
 │   └── portfolio.py            # Portfolio tracking
 │
