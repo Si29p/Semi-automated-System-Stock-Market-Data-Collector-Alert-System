@@ -1,0 +1,28 @@
+advanced_stock_system/
+│
+├── app.py                      # Main Flask application
+├── bot.py                      # Telegram/SMS bot
+├── database.py                 # SQLite database handling
+├── backtester.py               # Strategy backtesting
+├── dashboard.html              # Web interface
+│
+├── core/
+│   ├── fetcher.py              # Advanced data fetching
+│   ├── analyzer.py             # Multiple strategy analysis
+│   ├── risk_manager.py         # Risk calculation
+│   └── portfolio.py            # Portfolio tracking
+│
+├── config/
+│   ├── settings.py             # All configurations
+│   ├── strategies.json         # Strategy configurations
+│   └── stocks.json             # Stock watchlist
+│
+├── utils/
+│   ├── helpers.py              # Helper functions
+│   ├── notifier.py             # Multiple notification methods
+│   └── logger.py               # Logging system
+│
+├── templates/                  # HTML templates
+├── static/                     # CSS, JS files
+├── requirements.txt            # All dependencies
+└── README.md                   # Documentation
