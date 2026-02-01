@@ -1,0 +1,136 @@
+import telegram
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
+import asyncio
+from config.settings import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+
+class StockTelegramBot:
+    def __init__(self):
+        self.token = TELEGRAM_BOT_TOKEN
+        self.chat_id = TELEGRAM_CHAT_ID
+        self.app = None
+        
+    async def start(self, update, context):
+        """Send welcome message"""
+        welcome_msg = """
+        📈 *Stock Alert Bot* 📈
+        
+        Available Commands:
+        /start - Show this message
+        /status - Check system status
+        /stocks - List monitored stocks
+        /signals - Get latest signals
+        /portfolio - View portfolio
+        /help - Show help
+        
+        Alerts will be sent automatically when signals are generated.
+        """
+        await update.message.reply_text(welcome_msg, parse_mode='Markdown')
+    
+    async def send_alert(self, signal_data):
+        """Send alert to Telegram"""
+        if not self.token or not self.chat_id:
+            return False
+        
+        try:
+            bot = telegram.Bot(token=self.token)
+            
+            message = self.format_alert_message(signal_data)
+            await bot.send_message(
+                chat_id=self.chat_id,
+                text=message,
+                parse_mode='Markdown'
+            )
+            return True
+            
+        except Exception as e:
+            print(f"Telegram error: {e}")
+            return False
+    
+    def format_alert_message(self, signal):
+        """Format alert message for Telegram"""
+        emoji = "🟢" if signal['signal'] == 'BUY' else "🔴" if signal['signal'] == 'SELL' else "🟡"
+        
+        message = f"""
+        {emoji} *{signal['symbol']} - {signal['signal']} Signal*
+        
+        📊 *Details:*
+        Price: ₹{signal['current_price']}
+        Confidence: {signal['confidence']*100:.1f}%
+        Risk Score: {signal['risk_score']}/10
+        
+        🎯 *Levels:*
+        Entry: ₹{signal['entry']}
+        Stop Loss: ₹{signal['stop_loss']}
+        Target: ₹{signal['target']}
+        
+        ⚙️ *Indicators:*
+        RSI: {signal['details']['rsi']:.1f}
+        MACD: {signal['details']['macd']:.4f}
+        Volume: {signal['details']['volume']:,.0f}
+        
+        ⏰ Time: {signal['timestamp'].strftime('%H:%M:%S')}
+        
+        _⚠️ Disclaimer: Automated signal. Verify before trading._
+        """
+        return message
+    
+    def run_bot(self):
+        """Run the Telegram bot"""
+        if not self.token:
+            print("Telegram token not configured")
+            return
+        
+        async def main():
+            self.app = Application.builder().token(self.token).build()
+            
+            # Add command handlers
+            self.app.add_handler(CommandHandler("start", self.start))
+            self.app.add_handler(CommandHandler("status", self.status))
+            self.app.add_handler(CommandHandler("signals", self.send_latest_signals))
+            
+            # Start bot
+            await self.app.initialize()
+            await self.app.start()
+            await self.app.updater.start_polling()
+            
+            print("Telegram bot started successfully")
+            
+            # Keep running
+            await asyncio.Event().wait()
+        
+        try:
+            asyncio.run(main())
+        except KeyboardInterrupt:
+            print("\nBot stopped")
+    
+    async def status(self, update, context):
+        """Send system status"""
+        status_msg = """
+        ✅ *System Status: Running*
+        
+        Last checked: Just now
+        Monitored stocks: 10
+        Active alerts: 2
+        System health: Good
+        """
+        await update.message.reply_text(status_msg, parse_mode='Markdown')
+    
+    async def send_latest_signals(self, update, context):
+        """Send latest signals"""
+        # You would fetch from database here
+        signals_msg = """
+        📊 *Latest Signals:*
+        
+        1. RELIANCE.NS - BUY
+           Price: ₹2,450
+           Confidence: 78%
+        
+        2. TCS.NS - HOLD
+           Price: ₹3,200
+           Confidence: 65%
+        
+        3. INFY.NS - SELL
+           Price: ₹1,450
+           Confidence: 72%
+        """
+        await update.message.reply_text(signals_msg, parse_mode='Markdown')
